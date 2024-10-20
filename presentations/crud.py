@@ -10,6 +10,22 @@ from database import async_session_maker
 from presentations.models import Presentation
 from base.crud import BaseCRUD
 from presentations.schemas import PresentationCreate
+from enum import Enum
+
+
+class MonthEnum(str, Enum):
+    january = "Январь"
+    february = "Февраль"
+    march = "Март"
+    april = "Апрель"
+    may = "Май"
+    june = "Июнь"
+    july = "Июль"
+    august = "Август"
+    september = "Сентябрь"
+    october = "Октябрь"
+    november = "Ноябрь"
+    december = "Декабрь"
 
 
 class PresentationCRUD(BaseCRUD):
@@ -28,15 +44,15 @@ class PresentationCRUD(BaseCRUD):
             return plain_result
 
     @classmethod
-    async def add(cls, title, owner, year, file):
+    async def add(cls, title, owner, year, month, file):
         async with async_session_maker() as session:
             async with session.begin():
                 try:
-                    presentation_data = PresentationCreate(title=title, owner=owner, year=year)
+                    presentation_data = PresentationCreate(title=title, owner=owner, month=month, year=year)
                 except ValidationError as e:
                     raise HTTPException(status_code=400, detail=e.errors())
                 file_extension = file.filename.split(".")[-1]
-                new_instance = cls.model(title=title, owner=owner, year=year, extension=file_extension)
+                new_instance = cls.model(title=title, owner=owner, month=month, year=year, extension=file_extension)
                 session.add(new_instance)
                 await session.flush()
                 with open(f"media/presentations/{new_instance.id}.{file_extension}", "wb") as buffer:
@@ -58,6 +74,8 @@ class PresentationCRUD(BaseCRUD):
                     presentation = result.scalars().one()
                     filename = f"{presentation.id}.{presentation.extension}"
                     path = f"media/presentations/{filename}"
-                    return FileResponse(path, media_type='application/octet-stream', filename=filename)
+                    return FileResponse(path, media_type='application/octet-stream',
+                                        filename=f"{presentation.owner}-{presentation.year}-{presentation.month}.\
+                                        {presentation.extension}")
                 except NoResultFound:
                     raise HTTPException(status_code=404, detail="Presentation not found")

@@ -1,7 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, Form
 from presentations.schemas import PresentationRead
-from presentations.crud import PresentationCRUD
-
+from presentations.crud import PresentationCRUD, MonthEnum
 
 router = APIRouter(
     prefix="/presentations",
@@ -14,9 +13,10 @@ async def add_presentation(
         title: str = Form(...),
         owner: str = Form(...),
         year: int = Form(...),
+        month: MonthEnum = Form(...),
         file: UploadFile = File(...),
                             ):
-    presentation = await PresentationCRUD.add(title=title, owner=owner, year=year, file=file)
+    presentation = await PresentationCRUD.add(title=title, owner=owner, year=year, month=month, file=file)
     return presentation
 
 
@@ -27,8 +27,8 @@ async def get_all_presentations():
 
 
 @router.get("/filter", response_model=list[PresentationRead] | None)
-async def get_presentation_by_filter(owner: str = None, title: str = None, year: int = None):
-    presentation = await PresentationCRUD.find_presentation_by_filter(owner=owner, title=title, year=year)
+async def get_presentation_by_filter(owner: str = None, title: str = None, month: MonthEnum = None, year: int = None):
+    presentation = await PresentationCRUD.find_presentation_by_filter(owner=owner, title=title, month=month, year=year)
     return presentation
 
 
