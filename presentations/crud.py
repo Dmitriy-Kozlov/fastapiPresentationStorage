@@ -1,7 +1,15 @@
+import shutil
+
+from fastapi import HTTPException
+from pydantic import ValidationError
+from sqlalchemy.exc import SQLAlchemyError, NoResultFound
 from sqlalchemy.future import select
+from starlette.responses import FileResponse
+
 from database import async_session_maker
 from presentations.models import Presentation
 from base.crud import BaseCRUD
+from presentations.schemas import PresentationCreate
 
 
 class PresentationCRUD(BaseCRUD):
@@ -18,3 +26,38 @@ class PresentationCRUD(BaseCRUD):
             result = await session.execute(query)
             plain_result = result.scalars().all()
             return plain_result
+
+    @classmethod
+    async def add(cls, title, owner, year, file):
+        async with async_session_maker() as session:
+            async with session.begin():
+                try:
+                    presentation_data = PresentationCreate(title=title, owner=owner, year=year)
+                except ValidationError as e:
+                    raise HTTPException(status_code=400, detail=e.errors())
+                file_extension = file.filename.split(".")[-1]
+                new_instance = cls.model(title=title, owner=owner, year=year, extension=file_extension)
+                session.add(new_instance)
+                await session.flush()
+                with open(f"media/presentations/{new_instance.id}.{file_extension}", "wb") as buffer:
+                    shutil.copyfileobj(file.file, buffer)
+                try:
+                    await session.commit()
+                except SQLAlchemyError as e:
+                    await session.rollback()
+                    raise e
+                return new_instance
+
+    @classmethod
+    async def download(cls, presentation_id: int):
+        async with async_session_maker() as session:
+            async with session.begin():
+                try:
+                    query = select(Presentation).filter_by(id=presentation_id)
+                    result = await session.execute(query)
+                    presentation = result.scalars().one()
+                    filename = f"{presentation.id}.{presentation.extension}"
+                    path = f"media/presentations/{filename}"
+                    return FileResponse(path, media_type='application/octet-stream', filename=filename)
+                except NoResultFound:
+                    raise HTTPException(status_code=404, detail="Presentation not found")
