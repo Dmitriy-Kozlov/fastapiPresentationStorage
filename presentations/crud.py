@@ -1,5 +1,7 @@
 import shutil
-
+import os
+import glob
+from sqlalchemy import delete
 from fastapi import HTTPException
 from pydantic import ValidationError
 from sqlalchemy.exc import SQLAlchemyError, NoResultFound
@@ -79,3 +81,18 @@ class PresentationCRUD(BaseCRUD):
                                         {presentation.extension}")
                 except NoResultFound:
                     raise HTTPException(status_code=404, detail="Presentation not found")
+
+    @classmethod
+    async def delete(cls, presentation_id: int):
+        async with async_session_maker() as session:
+            async with session.begin():
+                query = delete(cls.model).filter(cls.model.id == presentation_id)
+                await session.execute(query)
+                await session.commit()
+                file_pattern = f"media/presentations/{presentation_id}.*"
+                files_to_delete = glob.glob(file_pattern)
+                if not files_to_delete:
+                    raise FileNotFoundError(f"No files found for presentation ID {presentation_id}")
+                for file_path in files_to_delete:
+                    os.remove(file_path)
+                return {"message": "obj deleted"}
