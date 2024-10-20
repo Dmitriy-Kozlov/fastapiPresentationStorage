@@ -42,3 +42,9 @@ async def download_presentation(presentation_id: int,):
 async def get_presentation_by_id(id: int):
     presentation = await PresentationCRUD.find_one_or_none_by_id(id)
     return presentation
+
+
+@router.delete("/{id}/delete")
+async def delete_presentation_by_id(id: int):
+    result = await PresentationCRUD.delete(id)
+    return result

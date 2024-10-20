@@ -1,5 +1,6 @@
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.future import select
+from sqlalchemy import delete
 from database import async_session_maker
 
 
@@ -34,3 +35,12 @@ class BaseCRUD:
                     await session.rollback()
                     raise e
                 return new_instance
+
+    @classmethod
+    async def delete(cls, presentation_id: int):
+        async with async_session_maker() as session:
+            async with session.begin():
+                query = delete(cls.model).filter(cls.model.id == presentation_id)
+                await session.execute(query)
+                await session.commit()
+                return {"message": "obj deleted"}
