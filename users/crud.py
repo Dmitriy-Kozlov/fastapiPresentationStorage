@@ -8,6 +8,7 @@ from jwt.exceptions import InvalidTokenError
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.future import select
 
+from base.crud import BaseCRUD
 from database import async_session_maker
 from users.schemas import UserRead, UserInDB, TokenData, Token
 from users.models import User
@@ -19,7 +20,7 @@ ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 120
 
 
-class UserCRUD:
+class UserCRUD(BaseCRUD):
     model = User
 
     @classmethod
@@ -27,6 +28,11 @@ class UserCRUD:
         async with async_session_maker() as session:
             if user.password != user.password2:
                 raise HTTPException(status_code=400, detail="Passwords don't match")
+            query = select(cls.model).filter_by(username=user.username)
+            result = await session.execute(query)
+            plain_result = result.scalar_one_or_none()
+            if plain_result:
+                raise HTTPException(status_code=400, detail="Username is occupied")
             hashed_password = get_password_hash(user.password)
             new_instance = User(
                 username=user.username,

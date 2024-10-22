@@ -47,6 +47,6 @@ async def get_presentation_by_id(id: int):
 
 
 @router.delete("/{id}/delete")
-async def delete_presentation_by_id(id: int):
+async def delete_presentation_by_id(id: int, user=Depends(get_current_active_user)):
     result = await PresentationCRUD.delete(id)
     return result
