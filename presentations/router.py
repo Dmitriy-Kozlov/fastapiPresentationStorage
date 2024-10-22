@@ -1,6 +1,7 @@
-from fastapi import APIRouter, UploadFile, File, Form
+from fastapi import APIRouter, UploadFile, File, Form, Depends
 from presentations.schemas import PresentationRead
 from presentations.crud import PresentationCRUD, MonthEnum
+from users.router import get_current_active_user
 
 router = APIRouter(
     prefix="/presentations",
@@ -10,11 +11,12 @@ router = APIRouter(
 
 @router.post("/add", response_model=PresentationRead)
 async def add_presentation(
+        user=Depends(get_current_active_user),
         title: str = Form(...),
         owner: str = Form(...),
         year: int = Form(...),
         month: MonthEnum = Form(...),
-        file: UploadFile = File(...),
+        file: UploadFile = File(...)
                             ):
     presentation = await PresentationCRUD.add(title=title, owner=owner, year=year, month=month, file=file)
     return presentation
