@@ -12,22 +12,6 @@ from database import async_session_maker
 from presentations.models import Presentation
 from base.crud import BaseCRUD
 from presentations.schemas import PresentationCreate
-from enum import Enum
-
-
-class MonthEnum(str, Enum):
-    january = "Январь"
-    february = "Февраль"
-    march = "Март"
-    april = "Апрель"
-    may = "Май"
-    june = "Июнь"
-    july = "Июль"
-    august = "Август"
-    september = "Сентябрь"
-    october = "Октябрь"
-    november = "Ноябрь"
-    december = "Декабрь"
 
 
 class PresentationCRUD(BaseCRUD):
@@ -77,8 +61,7 @@ class PresentationCRUD(BaseCRUD):
                     filename = f"{presentation.id}.{presentation.extension}"
                     path = f"media/presentations/{filename}"
                     return FileResponse(path, media_type='application/octet-stream',
-                                        filename=f"{presentation.owner}-{presentation.year}-{presentation.month}.\
-                                        {presentation.extension}")
+                                        filename=f"{presentation.owner}-{presentation.year}-{presentation.month}.{presentation.extension}")
                 except NoResultFound:
                     raise HTTPException(status_code=404, detail="Presentation not found")
 

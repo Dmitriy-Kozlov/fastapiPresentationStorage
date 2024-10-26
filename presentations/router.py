@@ -1,6 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, Form, Depends
-from presentations.schemas import PresentationRead
-from presentations.crud import PresentationCRUD, MonthEnum
+from presentations.schemas import PresentationRead, PresentationFilter, MonthEnum
+from presentations.crud import PresentationCRUD
 from users.router import get_current_active_user
 
 router = APIRouter(
@@ -28,15 +28,20 @@ async def get_all_presentations():
     return presentations
 
 
-@router.get("/filter", response_model=list[PresentationRead] | None)
-async def get_presentation_by_filter(owner: str = None, title: str = None, month: MonthEnum = None, year: int = None):
-    presentation = await PresentationCRUD.find_presentation_by_filter(owner=owner, title=title, month=month, year=year)
+@router.post("/filter", response_model=list[PresentationRead] | None)
+async def get_presentation_by_filter(filter_data: PresentationFilter):
+    presentation = await PresentationCRUD.find_presentation_by_filter(
+        owner=filter_data.owner,
+        title=filter_data.title,
+        month=filter_data.month,
+        year=filter_data.year
+    )
     return presentation
 
 
 @router.get("/download")
-async def download_presentation(presentation_id: int,):
-    file = await PresentationCRUD.download(presentation_id)
+async def download_presentation(id: int,):
+    file = await PresentationCRUD.download(id)
     return file
 
 

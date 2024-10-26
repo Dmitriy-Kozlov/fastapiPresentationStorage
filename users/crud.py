@@ -49,6 +49,24 @@ class UserCRUD(BaseCRUD):
             return new_instance
 
     @classmethod
+    async def create_superuser(cls, user):
+        async with async_session_maker() as session:
+            hashed_password = get_password_hash(user.password)
+            new_instance = User(
+                username=user.username,
+                full_name=user.full_name,
+                hashed_password=hashed_password,
+                email=user.email,
+                disabled=False)
+            session.add(new_instance)
+            try:
+                await session.commit()
+            except SQLAlchemyError as e:
+                await session.rollback()
+                raise e
+            return new_instance
+
+    @classmethod
     async def get_token(cls, username, password):
         user = await authenticate_user(username, password)
         if not user:
