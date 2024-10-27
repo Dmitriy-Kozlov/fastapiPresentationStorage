@@ -41,6 +41,7 @@ class PresentationCRUD(BaseCRUD):
                 new_instance = cls.model(title=title, owner=owner, month=month, year=year, extension=file_extension)
                 session.add(new_instance)
                 await session.flush()
+                os.makedirs(f"media/presentations", exist_ok=True)
                 with open(f"media/presentations/{new_instance.id}.{file_extension}", "wb") as buffer:
                     shutil.copyfileobj(file.file, buffer)
                 try:
