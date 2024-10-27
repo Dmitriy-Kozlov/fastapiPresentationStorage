@@ -781,3 +781,18 @@ button[type="submit"]:hover {
     }
 }
 
+
+.btn-delete {
+    padding: 6px 16px;
+    background: #f44336;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-left: 8px;
+    transition: background 0.3s ease;
+}
+
+.btn-delete:hover {
+    background: #d32f2f;
+}

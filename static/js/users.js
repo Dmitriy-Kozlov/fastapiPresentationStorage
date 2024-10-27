@@ -44,6 +44,7 @@ function populateTable() {
             </td>
             <td>
                 <button class="btn-edit" onclick="openEditModal(${user.id})">Edit</button>
+                <button class="btn-delete" onclick="deleteUser(${user.id})">Delete</button>
             </td>
         `;
         tableBody.appendChild(row);
@@ -118,5 +119,32 @@ window.onclick = function(event) {
     const modal = document.getElementById('editModal');
     if (event.target === modal) {
         closeModal();
+    }
+}
+
+
+async function deleteUser(userId) {
+    if (!confirm('Are you sure you want to delete this user?')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/users/${userId}/delete`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to delete user');
+        }
+
+        await fetchUsers(); // Refresh the table
+        showToast('User deleted successfully');
+    } catch (error) {
+        console.error('Delete error:', error);
+        showToast('Failed to delete user');
     }
 }

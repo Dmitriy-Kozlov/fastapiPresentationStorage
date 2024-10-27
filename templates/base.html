@@ -10,6 +10,7 @@
 </head>
 
 <body>
+    <div class="container">
         <div class="nav-bar">
             <div class="nav-title">{% block nav_title %}{% endblock %}</div>
             <button class="menu-toggle" onclick="toggleMenu()">☰</button>
@@ -21,7 +22,7 @@
                 <button id="logoutBtn" class="nav-btn btn-logout hidden" onclick="handleLogout()">Logout</button>
             </div>
         </div>
-
+    </div>
 {% block content %}
 {% endblock %}
 
