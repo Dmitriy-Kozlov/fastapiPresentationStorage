@@ -1,3 +1,6 @@
+function isUserAuthorized() {
+    return !!localStorage.getItem('authToken');
+}
 
 // Populate years
 const yearSelect = document.getElementById('year');
@@ -12,6 +15,9 @@ for (let year = currentYear; year >= currentYear - 100; year--) {
 
 // Function to create result card
 function createResultCard(film) {
+    const deleteButton = isUserAuthorized()
+        ? `<button class="btn-delete" onclick="deleteFilm(${film.id})">Delete</button>`
+        : '';
     return `
         <div class="result-card" data-id="${film.id}">
             <div class="card-content">
@@ -20,7 +26,7 @@ function createResultCard(film) {
                 <p class="card-info"><strong>Date:</strong> ${film.month}/${film.year}</p>
                 <div class="card-actions">
                     <button class="btn-download" onclick="downloadFilm(${film.id})">Download</button>
-                    <button class="btn-delete" onclick="deleteFilm(${film.id})">Delete</button>
+                    ${deleteButton}
                 </div>
             </div>
         </div>

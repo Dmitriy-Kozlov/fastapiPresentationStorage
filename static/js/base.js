@@ -18,6 +18,26 @@ function checkAuthStatus() {
         usersBtn.classList.add('hidden');
     }
 }
+
+async function fetchCurrentUser() {
+    try {
+        const response = await fetch('/users/me', {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        if (!response.ok) {
+            throw new Error('Failed to fetch current user');
+        }
+        const user = await response.json();
+        document.getElementById('currentUsername').textContent = user.username;
+    } catch (error) {
+        console.error('Failed to fetch current user:', error);
+        document.getElementById('currentUsername').textContent = 'Unknown User';
+    }
+}
+
+fetchCurrentUser();
 checkAuthStatus();
 
 function showToast(message, duration = 3000) {
