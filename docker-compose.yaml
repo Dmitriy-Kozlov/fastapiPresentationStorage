@@ -13,6 +13,8 @@ services:
     command:  sh -c "sleep 10 && alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
     depends_on:
       - db
+    volumes:
+      - mediafiles:/app/media
     networks:
       - webnet
 
@@ -21,6 +23,8 @@ services:
     environment:
       - POSTGRES_PASSWORD=admin
       - POSTGRES_DB=postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     networks:
       - webnet
 
@@ -39,4 +43,7 @@ services:
 networks:
   webnet:
 
+volumes:
+  pgdata:
+  mediafiles:
 
